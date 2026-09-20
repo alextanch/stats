@@ -1,0 +1,24 @@
+[project]
+name = "stats"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.12"
+
+# Версии без нижних границ: ориентир — то, что установлено в Google Colab.
+# Чтобы закрепить, выполните в Colab `!pip list` и впишите те же версии.
+dependencies = [
+    "ipykernel",
+    "jupyter",
+    "matplotlib",
+    "numpy",
+    "pandas",
+    "scipy",
+    "seaborn",
+    "statsmodels",
+    "tqdm",
+]
+
+[dependency-groups]
+dev = [
+    "nbstripout",
+]
