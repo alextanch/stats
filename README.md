@@ -7,6 +7,7 @@
 | № | Тема | Ноутбук | PDF |
 |---|------|---------|-----|
 | 1 | Точечные оценки параметров распределения | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab01/lab01.ipynb) | [lab01.pdf](lab01/lab01.pdf) |
+| 2 | Метод максимального правдоподобия | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab02/lab02.ipynb) | [lab02.pdf](lab02/lab02.pdf) |
 
 ## Как сдавать работу
 
