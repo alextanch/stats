@@ -22,3 +22,13 @@ plans.md
 *.nav
 *.snm
 *.vrb
+
+# Работы студентов (персональные данные)
+students/
+results/
+.claude/
+
+# лабораторные в работе
+lab04/
+lab05/
+lab06/
