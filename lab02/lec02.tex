@@ -1,0 +1,362 @@
+% Сборка: pdflatex lec02.tex
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{cmap}
+\usepackage[T1,T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{listings}
+
+% Чёрно-белое оформление кода: комментарии курсивом, без цвета.
+\lstdefinestyle{bw}{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  commentstyle=\itshape,
+  numbers=none,
+  frame=single,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  breaklines=true,
+  upquote=true,
+}
+\lstset{style=bw}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Определение}
+\newtheorem{example}{Пример}
+\theoremstyle{plain}
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}{Лемма}
+\theoremstyle{remark}
+\newtheorem*{remark}{Замечание}
+
+\renewcommand{\proofname}{Доказательство}
+\renewcommand{\qedsymbol}{$\blacksquare$}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\D}{\mathbb{D}}
+\renewcommand{\P}{\mathbb{P}}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries Теория к лабораторной работе 2\par}
+  {\large Метод максимального правдоподобия\par}
+\end{center}
+
+В лабораторной работе~1 мы познакомились с точечными оценками параметров распределения и их свойствами (несмещенность, состоятельность). Здесь рассматривается общий способ построения оценок~--- \emph{метод максимального правдоподобия} (ММП), и на примере распределения Пуассона разбираются его применение и свойства получаемой оценки.
+
+\section{Выборка и параметрическая модель}
+
+Пусть $\mathbf{X}=\{X_i\}_{i=1}^n$~--- выборка: набор независимых одинаково распределенных случайных величин с общим распределением из некоторого параметрического семейства. Это семейство задается плотностью (для непрерывных величин) или функцией вероятности (для дискретных) $p(x\mid\theta)$, где $\theta$~--- неизвестный параметр (скалярный или векторный). Требуется по наблюдаемой выборке оценить $\theta$.
+
+\emph{Обозначения.} Прописными буквами $X_i$ обозначаются случайные величины (выборка до проведения эксперимента), строчными $x_i$~--- их реализации, то есть конкретные наблюдённые числа, $\mathbf{x}=\{x_i\}_{i=1}^n$. Математическое ожидание, дисперсия и вероятности берутся от случайных величин $X_i$; функция правдоподобия, график и код работают с числами $x_i$. Эти же обозначения используются в заданиях лабораторной работы.
+
+\emph{Оценкой} параметра называют любую функцию выборки $\hat\theta_n=\hat\theta_n(X_1,\dots,X_n)$. Как функция случайных величин оценка сама случайна; подстановка наблюдённых $x_1,\dots,x_n$ дает число $\hat\theta_n(x_1,\dots,x_n)$. Напомним два основных свойства оценки.
+
+\begin{definition}
+Оценка $\hat\theta_n$ называется \emph{несмещенной}, если $\E\hat\theta_n=\theta$ при любом допустимом значении $\theta$.
+\end{definition}
+
+\begin{definition}
+Оценка $\hat\theta_n$ называется \emph{состоятельной}, если она сходится к $\theta$ по вероятности: для любого $\varepsilon>0$
+$$\P\left(|\hat\theta_n-\theta|>\varepsilon\right)\to0,\quad n\to\infty.$$
+\end{definition}
+
+\section{Функция правдоподобия и оценка максимального правдоподобия}
+
+Идея метода: из всех возможных значений параметра выбрать то, при котором наблюдаемая выборка «наиболее правдоподобна», то есть имеет наибольшую вероятность (для дискретных величин) или наибольшую плотность (для непрерывных).
+
+Из независимости наблюдений совместная плотность (функция вероятности) выборки равна произведению маргинальных: $\prod_{i=1}^n p(x_i\mid\theta)$. Если рассматривать это выражение как функцию $\theta$ при \emph{фиксированных} наблюдаемых $x_i$, получается функция правдоподобия.
+
+\begin{definition}
+\emph{Функцией правдоподобия} реализации $\mathbf{x}=\{x_i\}_{i=1}^n$ случайной выборки $\mathbf{X}=\{X_i\}_{i=1}^n$ из распределения с плотностью (или функцией вероятности) $p(x\mid\theta)$ называется функция параметра $\theta$
+$$L(\theta;\mathbf{x})=\prod_{i=1}^n p(x_i\mid\theta).$$
+\end{definition}
+
+\begin{definition}
+\emph{Оценкой максимального правдоподобия} (ОМП) называется значение параметра, при котором функция правдоподобия максимальна:
+$$\hat\theta_n=\argmax_{\theta}L(\theta;\mathbf{x}).$$
+\end{definition}
+
+\begin{remark}
+Функция правдоподобия $L(\theta;\mathbf{x})$~--- не плотность распределения параметра $\theta$: по $\theta$ она, вообще говоря, не нормирована (интеграл по $\theta$ не равен~1). Это функция параметра при фиксированных данных, а не наоборот.
+\end{remark}
+
+\subsection{Логарифм правдоподобия}
+
+На практике максимизируют не саму $L(\theta)$, а ее логарифм.
+
+\begin{definition}
+\emph{Логарифмом функции правдоподобия} (log-likelihood) называется
+$$\ell(\theta)=\ln L(\theta;\mathbf{x})=\sum_{i=1}^n\ln p(x_i\mid\theta).$$
+\end{definition}
+
+Логарифм~--- строго монотонно возрастающая функция, поэтому $L(\theta)$ и $\ell(\theta)=\ln L(\theta)$ достигают максимума в одной и той же точке:
+$$\argmax_\theta L(\theta)=\argmax_\theta \ell(\theta).$$
+При этом переход к логарифму удобен по двум причинам:
+\begin{itemize}
+  \item произведение $n$ множителей превращается в сумму, а суммы проще дифференцировать (достаточно линейности производной, не нужно правило дифференцирования произведения);
+  \item при больших $n$ произведение $n$ вероятностей (каждая меньше~1) стремится к нулю и может выйти за пределы точности чисел с плавающей запятой (underflow), тогда как сумма логарифмов вычисляется без проблем.
+\end{itemize}
+
+\subsection{Как искать ОМП}
+
+Если $\ell(\theta)$ дифференцируема по $\theta$, а точка максимума лежит внутри области допустимых значений параметра, то ОМП находят по схеме:
+\begin{enumerate}
+  \item записать $L(\theta)$ и $\ell(\theta)$;
+  \item найти производную $\ell'(\theta)$ и решить \emph{уравнение правдоподобия} $\ell'(\theta)=0$;
+  \item проверить, что найденная стационарная точка~--- максимум. Достаточное условие: $\ell''(\hat\theta)<0$. Если $\ell''(\theta)\le0$ при всех допустимых $\theta$ (функция $\ell$ вогнута), то любая стационарная точка~--- точка глобального максимума;
+  \item при необходимости сравнить значение $\ell$ с ее значениями на границе области параметров.
+\end{enumerate}
+
+Слагаемые в $\ell(\theta)$, не зависящие от $\theta$, не влияют ни на положение максимума, ни на производную, поэтому при построении графика или вычислении ОМП их можно опускать.
+
+\section{Распределение Пуассона}
+
+\begin{definition}
+Случайная величина $\xi$ имеет \emph{распределение Пуассона} $\mathrm{Pois}(\lambda)$ с параметром $\lambda>0$, если она принимает целые неотрицательные значения с вероятностями
+$$p(k\mid\lambda)=\P(\xi=k)=\frac{\lambda^k e^{-\lambda}}{k!},\quad k=0,1,2,\dots$$
+\end{definition}
+
+Распределение Пуассона описывает число событий, происходящих за фиксированный промежуток времени, если события наступают независимо и с постоянной средней интенсивностью $\lambda$ (например, число звонков в колл-центр за час).
+
+Нам понадобятся математическое ожидание и дисперсия:
+$$\E\xi=\lambda,\qquad \D\xi=\lambda.$$
+
+\begin{proof}[Вывод]
+Для математического ожидания, сдвигая индекс суммирования $m=k-1$ и используя $\sum_{m\ge0}\lambda^m/m!=e^\lambda$:
+$$\E\xi=\sum_{k=0}^\infty k\frac{\lambda^k e^{-\lambda}}{k!}=\lambda e^{-\lambda}\sum_{k=1}^\infty\frac{\lambda^{k-1}}{(k-1)!}=\lambda e^{-\lambda}e^{\lambda}=\lambda.$$
+Аналогично для факториального момента:
+$$\E\,\xi(\xi-1)=\sum_{k=2}^\infty k(k-1)\frac{\lambda^k e^{-\lambda}}{k!}=\lambda^2 e^{-\lambda}\sum_{k=2}^\infty\frac{\lambda^{k-2}}{(k-2)!}=\lambda^2.$$
+Поэтому $\E\xi^2=\E\,\xi(\xi-1)+\E\xi=\lambda^2+\lambda$ и
+$\D\xi=\E\xi^2-(\E\xi)^2=\lambda^2+\lambda-\lambda^2=\lambda.$
+\end{proof}
+
+\section{Свойства математического ожидания и дисперсии}
+
+Для доказательства свойств оценки понадобятся следующие факты. Пусть $\xi_1,\dots,\xi_n$~--- случайные величины, $a_1,\dots,a_n$~--- константы.
+\begin{itemize}
+  \item \emph{Линейность математического ожидания} (не требует независимости):
+  $$\E\Big(\sum_{i=1}^n a_i\xi_i\Big)=\sum_{i=1}^n a_i\,\E\xi_i.$$
+  \item \emph{Дисперсия суммы независимых величин} и однородность дисперсии:
+  $$\D\Big(\sum_{i=1}^n \xi_i\Big)=\sum_{i=1}^n \D\xi_i\ \ (\text{при независимости}),\qquad \D(a\xi)=a^2\D\xi.$$
+\end{itemize}
+
+\begin{theorem}[Неравенство Чебышёва]
+Пусть у случайной величины $\eta$ существует конечная дисперсия. Тогда для любого $\varepsilon>0$
+$$\P\left(|\eta-\E\eta|>\varepsilon\right)\le\frac{\D\eta}{\varepsilon^2}.$$
+\end{theorem}
+
+\begin{proof}
+Пусть $\zeta=(\eta-\E\eta)^2\ge0$. По неравенству Маркова $\P(\zeta\ge a)\le\E\zeta/a$ при $a>0$; при $a=\varepsilon^2$ получаем
+$$\P\left(|\eta-\E\eta|>\varepsilon\right)\le\P(\zeta\ge\varepsilon^2)\le\frac{\E(\eta-\E\eta)^2}{\varepsilon^2}=\frac{\D\eta}{\varepsilon^2}.$$
+\end{proof}
+
+\begin{remark}
+Для несмещенной оценки $\E\hat\theta_n=\theta$, поэтому неравенство Чебышёва принимает вид $\P(|\hat\theta_n-\theta|>\varepsilon)\le \D\hat\theta_n/\varepsilon^2$. Отсюда \emph{достаточное условие состоятельности}: если оценка несмещенная и $\D\hat\theta_n\to0$ при $n\to\infty$, то она состоятельна.
+\end{remark}
+
+\begin{theorem}[Закон больших чисел]
+Пусть $X_1,X_2,\dots$~--- независимые одинаково распределенные случайные величины с конечным математическим ожиданием $\E X_1=\mu$. Тогда выборочное среднее $\bar X_n=\frac1n\sum_{i=1}^n X_i$ сходится к $\mu$ по вероятности (и почти наверное).
+\end{theorem}
+
+Закон больших чисел объясняет два наблюдаемых в работе эффекта. Во-первых, \emph{эмпирическая частота} значения $k$ в выборке, $\hat p_k=\frac1n\#\{i:x_i=k\}$, является выборочным средним независимых индикаторов $\mathbf 1\{X_i=k\}$, у которых $\E\mathbf 1\{X_i=k\}=p(k\mid\lambda)$. Поэтому при росте $n$ эмпирические частоты приближают теоретические вероятности. Во-вторых, выборочное среднее $\bar X_n$ сходится к $\E X_1$ (см.\ далее).
+
+\section{Примеры с решениями}
+
+Ниже разобраны задачи теоретической части; на них опирается практическая часть работы.
+
+\begin{example}
+Дайте определение функции правдоподобия и ОМП.
+\end{example}
+
+\noindent\textbf{Решение.} Функция правдоподобия реализации $\mathbf{x}=\{x_i\}_{i=1}^n$ случайной выборки $\mathbf{X}=\{X_i\}_{i=1}^n$ из распределения с плотностью (или функцией вероятности) $p(x\mid\theta)$~--- это функция параметра $\theta$ при фиксированной реализации:
+$$L(\theta;\mathbf{x})=\prod_{i=1}^n p(x_i\mid\theta).$$
+Оценка максимального правдоподобия~--- значение параметра, при котором правдоподобие выборки максимально:
+$$\hat\theta_n=\argmax_{\theta}L(\theta;\mathbf{x}).$$
+
+\begin{example}
+Почему для нахождения ОМП удобнее максимизировать логарифм функции правдоподобия?
+\end{example}
+
+\noindent\textbf{Решение.} Логарифм~--- монотонно возрастающая функция, поэтому точка максимума $L(\theta)$ совпадает с точкой максимума $\ln L(\theta)$. При этом переход к логарифму удобнее:
+\begin{itemize}
+  \item произведение превращается в сумму: $\ln L(\theta)=\sum_{i=1}^n\ln p(x_i\mid\theta)$, а с суммой проще дифференцировать;
+  \item при больших $n$ произведение $n$ вероятностей (каждая $<1$) стремится к нулю и может выйти за пределы точности чисел с плавающей запятой, а сумма логарифмов остается вычислимой.
+\end{itemize}
+
+\begin{example}\label{ex:poisson-mle}
+Найдите функцию правдоподобия, логарифм правдоподобия и ОМП $\hat\lambda_n$ для реализации $\mathbf{x}=\{x_i\}_{i=1}^n$ случайной выборки $\mathbf{X}=\{X_i\}_{i=1}^n$ из $\mathrm{Pois}(\lambda)$, $\lambda>0$. Убедитесь по знаку второй производной, что найденная точка~--- максимум.
+\end{example}
+
+\noindent\textbf{Решение.} Для $\mathrm{Pois}(\lambda)$ функция вероятности $p(x\mid\lambda)=\dfrac{\lambda^x e^{-\lambda}}{x!}$, $x=0,1,2,\dots$ Функция правдоподобия реализации:
+$$L(\lambda)=\prod_{i=1}^n\frac{\lambda^{x_i}e^{-\lambda}}{x_i!}=\frac{\lambda^{\sum_i x_i}e^{-n\lambda}}{\prod_i x_i!}.$$
+Логарифм правдоподобия:
+$$\ell(\lambda)=\ln L(\lambda)=\sum_{i=1}^n\left(x_i\ln\lambda-\lambda-\ln(x_i!)\right)=\Big(\sum_{i=1}^n x_i\Big)\ln\lambda-n\lambda-\sum_{i=1}^n\ln(x_i!).$$
+Приравниваем производную по $\lambda$ к нулю:
+$$\ell'(\lambda)=\frac{\sum_{i=1}^n x_i}{\lambda}-n=0\quad\Longrightarrow\quad \hat\lambda_n=\frac1n\sum_{i=1}^n x_i=\bar x_n.$$
+Вторая производная
+$$\ell''(\lambda)=-\frac{\sum_{i=1}^n x_i}{\lambda^2}\le0\quad\text{при }\lambda>0$$
+(строго меньше нуля, если не все $x_i$ равны нулю), значит, $\ell$ вогнута, и найденная точка~--- максимум. Итак, ОМП параметра распределения Пуассона~--- выборочное среднее $\hat\lambda_n=\bar x_n$ (как функция случайной выборки $\hat\lambda_n=\bar X_n$). \hfill$\blacksquare$
+
+\begin{remark}
+Слагаемое $-\sum_i\ln(x_i!)$ не зависит от $\lambda$. При построении графика $\ell(\lambda)$ его можно опустить: график сдвинется по вертикали, но положение максимума не изменится. Если все $x_i=0$, то $\ell(\lambda)=-n\lambda$ убывает на $(0,\infty)$ и максимум не достигается внутри области $\lambda>0$ (супремум достигается при $\lambda\to0$); для выборок разумного объема из $\mathrm{Pois}(\lambda)$ с не слишком малым $\lambda$ эта ситуация практически невозможна.
+\end{remark}
+
+\begin{example}
+Докажите, что оценка $\hat\lambda_n$ из примера~\ref{ex:poisson-mle} несмещенная.
+\end{example}
+
+\noindent\textbf{Решение.} Элементы выборки независимы и одинаково распределены, $\E X_i=\lambda$ (математическое ожидание $\mathrm{Pois}(\lambda)$ равно $\lambda$). По линейности математического ожидания
+$$\E\hat\lambda_n=\E\bar X_n=\frac1n\sum_{i=1}^n\E X_i=\frac1n\cdot n\lambda=\lambda.$$
+Оценка несмещенная. \hfill$\blacksquare$
+
+\begin{example}
+Докажите, что оценка $\hat\lambda_n$ из примера~\ref{ex:poisson-mle} состоятельная.
+\end{example}
+
+\noindent\textbf{Решение.} Для $\mathrm{Pois}(\lambda)$ дисперсия $\D X_i=\lambda$. Из независимости элементов выборки
+$$\D\hat\lambda_n=\frac{1}{n^2}\sum_{i=1}^n\D X_i=\frac{\lambda}{n}\to0,\quad n\to\infty.$$
+По неравенству Чебышёва (оценка несмещенная, $\E\hat\lambda_n=\lambda$) для любого $\varepsilon>0$
+$$\P\left(|\hat\lambda_n-\lambda|>\varepsilon\right)\le\frac{\D\hat\lambda_n}{\varepsilon^2}=\frac{\lambda}{n\varepsilon^2}\to0,\quad n\to\infty.$$
+Оценка состоятельна. \hfill$\blacksquare$
+
+\begin{remark}
+Состоятельность $\hat\lambda_n=\bar X_n$ следует и непосредственно из закона больших чисел: $\bar X_n\to\E X_1=\lambda$ по вероятности. Кроме того, из формулы $\D\hat\lambda_n=\lambda/n$ видно, что разброс оценки по разным выборкам убывает как $1/\sqrt n$ (стандартное отклонение $\sqrt{\lambda/n}$).
+\end{remark}
+
+\section{Практическая часть: что и как считать}
+
+Для практических задач нужны следующие инструменты \lstinline|numpy| и \lstinline|scipy|. Ниже приведены и решения практических задач из ноутбука.
+
+\subsection{Генерация выборки и сравнение частот с функцией вероятности}
+
+Воспроизводимая выборка из $\mathrm{Pois}(\lambda)$ создается генератором \lstinline|rng = np.random.default_rng(seed)| и методом \lstinline|rng.poisson(lam, size)|. Эмпирические частоты получают как \lstinline|np.unique(x, return_counts=True)|, деля счетчики на $n$. Теоретическая функция вероятности~--- \lstinline|scipy.stats.poisson.pmf(k, lam)|. Согласно закону больших чисел частоты должны приближать $p(k\mid\lambda)$.
+
+\begin{example}
+Сгенерируйте выборку объема $n=1000$ из $\mathrm{Pois}(4.5)$ и сравните эмпирические частоты с теоретической функцией вероятности.
+\end{example}
+
+\noindent\textbf{Решение.}
+\begin{lstlisting}
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import stats
+
+rng = np.random.default_rng(42)
+
+lam = 4.5      # true lambda
+n = 1000
+
+x = rng.poisson(lam=lam, size=n)
+
+values, counts = np.unique(x, return_counts=True)
+freqs = counts / n
+
+k = np.arange(x.max() + 1)
+
+plt.bar(values, freqs, alpha=0.6, label="empirical frequencies")
+plt.plot(k, stats.poisson.pmf(k, lam), "o-", color="C1",
+         label=r"theoretical $\mathrm{Pois}(\lambda)$")
+plt.xlabel("$k$")
+plt.legend()
+plt.show()
+\end{lstlisting}
+Столбики эмпирических частот близки к точкам теоретической функции вероятности.
+
+\subsection{Вычисление ОМП}
+
+По примеру~\ref{ex:poisson-mle} ОМП есть выборочное среднее, то есть \lstinline|np.mean(x)|.
+
+\begin{example}
+Реализуйте функцию вычисления ОМП параметра $\lambda$ распределения Пуассона.
+\end{example}
+
+\noindent\textbf{Решение.}
+\begin{lstlisting}
+def hat_lambda_mle(x: np.ndarray) -> float:
+    lam = np.mean(x)
+    return lam
+
+
+print(hat_lambda_mle(x), np.mean(x))
+assert np.isclose(hat_lambda_mle(x), np.mean(x))
+\end{lstlisting}
+
+\subsection{График логарифма правдоподобия}
+
+Чтобы построить график $\ell(\lambda)$, нужно вычислить функцию $\ell$ на сетке значений $\lambda$ при фиксированной выборке. Слагаемое $-\sum_i\ln(x_i!)$ не зависит от $\lambda$, и его можно не учитывать (см.\ замечание к примеру~\ref{ex:poisson-mle}). Сетку нужно брать строго положительной (в $\lambda=0$ логарифм не определен) и содержащей истинное значение и ОМП.
+
+\begin{example}
+Постройте график $\ell(\lambda)$ для выборки из предыдущего примера, отметьте вертикальной линией $\hat\lambda_n$ и убедитесь, что оно соответствует максимуму графика.
+\end{example}
+
+\noindent\textbf{Решение.}
+\begin{lstlisting}
+def log_likelihood(lam: float, x: np.ndarray) -> float:
+    # the term -sum(log(x_i!)) does not depend on lambda
+    return x.sum() * np.log(lam) - len(x) * lam
+
+
+grid = np.linspace(0.1, 2 * lam, 500)
+ll = [log_likelihood(l, x) for l in grid]
+
+lam_hat = hat_lambda_mle(x)
+
+plt.plot(grid, ll, label=r"$\ell(\lambda)$")
+plt.axvline(lam_hat, color="black", linestyle="--", label=r"$\hat{\lambda}_n$")
+plt.xlabel(r"$\lambda$")
+plt.ylabel(r"$\ell(\lambda)$")
+plt.legend()
+plt.show()
+
+print(lam_hat, grid[np.argmax(ll)])
+\end{lstlisting}
+График унимодален (вогнут), а максимум на сетке \lstinline|grid[np.argmax(ll)]| совпадает с $\hat\lambda_n$ с точностью до шага сетки.
+
+\subsection{Сходимость оценки при росте $n$}
+
+Чтобы проиллюстрировать состоятельность, для одной выборки считают оценку $\hat\lambda_m$ по первым $m$ элементам для $m=1,\dots,n$ и рисуют ее как функцию $m$. Повторив это для нескольких независимых выборок, получаем несколько траекторий. Согласно примерам выше, $\E\hat\lambda_m=\lambda$ и $\D\hat\lambda_m=\lambda/m$: траектории колеблются вокруг $\lambda$, и их разброс уменьшается как $\sqrt{\lambda/m}$.
+
+\begin{example}
+Постройте зависимость $\hat\lambda_m$ от $m$ для $5$ независимых выборок объема $1000$ и отметьте истинное $\lambda$.
+\end{example}
+
+\noindent\textbf{Решение.}
+\begin{lstlisting}
+ns = np.arange(1, n + 1)
+K = 5   # number of samples
+
+for _ in range(K):
+    xk = rng.poisson(lam=lam, size=n)
+    plt.plot(ns, [hat_lambda_mle(xk[:m]) for m in ns], alpha=0.7)
+
+plt.axhline(lam, color="black", linestyle="--", label=r"$\lambda$")
+plt.xlabel("$n$")
+plt.ylabel(r"$\hat{\lambda}_n$")
+plt.legend()
+plt.show()
+\end{lstlisting}
+
+\subsection{Пример вывода}
+
+Эмпирические частоты хорошо приближают теоретическую функцию вероятности $\mathrm{Pois}(\lambda)$. График логарифма правдоподобия $\ell(\lambda)$ унимодален, а его максимум совпадает со значением $\hat\lambda_n$, вычисленным по формуле $\hat\lambda_n=\bar x_n$ (с точностью до шага сетки). Оценки $\hat\lambda_n$ для разных выборок приближаются к истинному $\lambda$ при росте $n$, а разброс между выборками уменьшается~--- это иллюстрация состоятельности оценки ($\D\hat\lambda_n=\lambda/n\to0$).
+
+\section*{Краткая сводка}
+
+\begin{itemize}
+  \item $L(\theta;\mathbf x)=\prod_{i=1}^n p(x_i\mid\theta)$, $\ell(\theta)=\sum_{i=1}^n\ln p(x_i\mid\theta)$, $\hat\theta_n=\argmax_\theta L=\argmax_\theta\ell$.
+  \item ОМП ищут из уравнения правдоподобия $\ell'(\theta)=0$ с проверкой знака $\ell''$.
+  \item Для $\mathrm{Pois}(\lambda)$: $\E\xi=\D\xi=\lambda$, $\ell(\lambda)=\sum x_i\ln\lambda-n\lambda-\sum\ln(x_i!)$, $\hat\lambda_n=\bar x_n$.
+  \item $\hat\lambda_n$ несмещенная ($\E\hat\lambda_n=\lambda$) и состоятельная ($\D\hat\lambda_n=\lambda/n\to0$, неравенство Чебышёва).
+  \item Эмпирические частоты сходятся к теоретическим вероятностям по закону больших чисел.
+\end{itemize}
+
+\end{document}
