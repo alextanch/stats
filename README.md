@@ -8,7 +8,7 @@
 |---|------|---------|-----|
 | 1 | Точечные оценки параметров распределения | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab01/lab01.ipynb) | [lab01.pdf](lab01/lab01.pdf) |
 | 2 | Метод максимального правдоподобия | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab02/lab02.ipynb) | [lab02.pdf](lab02/lab02.pdf) |
-| 3 | Доверительные интервалы | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab03/lab03.ipynb) | — |
+| 3 | Доверительные интервалы | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab03/lab03.ipynb) | [lab03.pdf](lab02/lab03.pdf) |
 <!-- | 4 | Проверка статистических гипотез | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab04/lab04.ipynb) | — |
 | 5 | Линейная регрессия и метод наименьших квадратов | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab05/lab05.ipynb) | — |
 | 6 | Байесовское оценивание | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/alextanch/stats/blob/main/lab06/lab06.ipynb) | — | -->
